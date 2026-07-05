@@ -1,3 +1,202 @@
+:root {
+  color: #222;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  background: #f7f7f7;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: #f7f7f7; }
+button, input, select, textarea { font: inherit; }
+
+.app-shell {
+  width: min(1060px, 100%);
+  margin: 0 auto;
+  padding: 28px 16px;
+}
+
+.page-header {
+  margin: 0 0 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #ddd;
+}
+
+h1 {
+  margin: 0 0 8px;
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+p {
+  margin: 0 0 10px;
+  line-height: 1.45;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.prompt-card,
+.form-card,
+.result-card {
+  background: #fff;
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.prompt-card p {
+  color: #555;
+  min-height: 40px;
+}
+
+button {
+  border: 1px solid #777;
+  border-radius: 4px;
+  background: #fff;
+  color: #222;
+  padding: 7px 11px;
+  cursor: pointer;
+}
+
+button:hover { background: #f0f0f0; }
+
+.primary-action,
+.prompt-card button,
+.result-actions button {
+  background: #222;
+  color: #fff;
+  border-color: #222;
+}
+
+.primary-action:hover,
+.prompt-card button:hover,
+.result-actions button:hover {
+  background: #444;
+}
+
+.form-shell {
+  display: flex;
+  justify-content: center;
+}
+
+.form-card,
+.result-card {
+  width: min(680px, 100%);
+}
+
+.link-button {
+  border: 0;
+  padding: 0;
+  margin-bottom: 14px;
+  background: transparent;
+  color: #333;
+}
+
+.link-button:hover { text-decoration: underline; background: transparent; }
+
+.small-label,
+.progress-text,
+.field-help {
+  color: #555;
+  font-size: .92rem;
+}
+
+.progress-wrap {
+  height: 7px;
+  border: 1px solid #ccc;
+  background: #fff;
+  margin: 10px 0 6px;
+}
+
+.progress-wrap div {
+  height: 100%;
+  background: #666;
+}
+
+.answer-field,
+.prompt-output {
+  width: 100%;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  background: #fff;
+  color: #222;
+  padding: 8px;
+}
+
+.answer-field { min-height: 36px; }
+.answer-field:focus,
+.prompt-output:focus { outline: 2px solid #bbb; outline-offset: 1px; }
+
+.choice-list,
+.checkbox-list,
+.quick-choices {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.choice-list label,
+.checkbox-option {
+  display: block;
+  padding: 0;
+}
+
+.choice-list input,
+.checkbox-option input {
+  margin-right: 6px;
+}
+
+.quick-choices {
+  grid-template-columns: repeat(2, max-content);
+}
+
+.error-message {
+  color: #9b1c1c;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+.success-message {
+  color: #176b35;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+.primary-action {
+  margin-top: 16px;
+}
+
+.prompt-output {
+  min-height: 420px;
+  resize: vertical;
+  line-height: 1.45;
+  margin: 10px 0 12px;
+  white-space: pre-wrap;
+}
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 760px) {
+  :root { font-size: 13px; }
+  .card-grid { grid-template-columns: 1fr; }
+  .app-shell { padding: 16px 12px; }
+  .quick-choices { grid-template-columns: 1fr 1fr; }
+  .result-actions button,
+  .primary-action { width: 100%; }
+}
 :root { color: #203047; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f4f8fb; }
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; }
