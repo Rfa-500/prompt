@@ -318,6 +318,23 @@ function CheckboxOptions() {
 }
 
 function renderField(step, value) {
+  if (step.key === 'options') {
+    return `<p class="field-help">Los puntos marcados se agregarán al prompt.</p>${CheckboxOptions()}`;
+  }
+
+  if (step.type === 'choice') {
+    return `<div class="choice-list">${step.choices.map((choice) => `<label><input type="radio" name="${step.key}" data-answer="${step.key}" value="${choice.value}" ${value === choice.value ? 'checked' : ''} /> ${choice.label}</label>`).join('')}</div>`;
+  }
+
+  if (step.type === 'name') {
+    return `<div class="quick-choices"><button type="button" data-quick-name="Sofía">Sofía</button><button type="button" data-quick-name="Gabriela">Gabriela</button></div><input class="answer-field" data-answer="${step.key}" type="text" value="${escapeHtml(value)}" placeholder="${step.placeholder}" autofocus />`;
+  }
+
+  if (step.type === 'select') {
+    return `<select class="answer-field" data-answer="${step.key}" autofocus>${step.options.map((option) => `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`).join('')}</select>`;
+  }
+
+  return `<input class="answer-field" data-answer="${step.key}" type="${step.type}" value="${escapeHtml(value)}" placeholder="${step.placeholder}" autofocus />`;
   if (step.key === 'options') return `<p class="field-help">Los puntos marcados se agregarán al prompt.</p>${CheckboxOptions()}`;
   if (step.type === 'choice') return `<div class="choice-list">${step.choices.map((choice) => `<label><input type="radio" name="${step.key}" data-answer="${step.key}" value="${choice.value}" ${value === choice.value ? 'checked' : ''} /> ${choice.label}</label>`).join('')}</div>`;
   if (step.type === 'name') return `<div class="quick-choices"><button type="button" data-quick-name="Sofía">Sofía</button><button type="button" data-quick-name="Gabriela">Gabriela</button></div><input class="answer-field" data-answer="${step.key}" type="text" value="${escapeHtml(value)}" placeholder="${step.placeholder}" autofocus />`;
