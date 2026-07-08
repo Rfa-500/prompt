@@ -299,61 +299,6 @@ let state = {
   selectedOptions: [], generatedPrompt: '', copyMessage: '',
 };
 
-const root = document.querySelector('#root');
-const escapeHtml = (value = '') => String(value).replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
-const currentOptions = () => optionsByType[state.selectedType] || [];
-const currentSteps = () => [...commonSteps, ...(extraSteps[state.selectedType] || []), { key: 'options', title: 'Elige qué debe incluir el prompt', optional: true }];
-
-function PromptCard(key, card) {
-  return `<article class="prompt-card"><h2>${card.title}</h2><p>${card.description}</p><button data-create="${key}" type="button">Crear prompt</button></article>`;
-}
-
-function renderHome() {
-  root.innerHTML = `<main class="app-shell"><header class="page-header"><h1>Generador de prompts para NotebookLM/Gemini</h1><p>Elige un tipo de prompt, completa los datos del libro y copia el resultado.</p></header><section class="card-grid" aria-label="Tipos de prompt">${Object.entries(promptTypes).map(([key, card]) => PromptCard(key, card)).join('')}</section></main>`;
-}
-
-function CheckboxOptions() {
-  const labels = optionLabels[state.answers.language || 'es'];
-  return `<div class="checkbox-list">${currentOptions().map((key) => `<label class="checkbox-option"><input type="checkbox" data-option="${key}" ${state.selectedOptions.includes(key) ? 'checked' : ''} /> ${labels[key]}</label>`).join('')}</div>`;
-}
-
-function renderField(step, value) {
-  if (step.key === 'options') {
-    return `<p class="field-help">Los puntos marcados se agregarán al prompt.</p>${CheckboxOptions()}`;
-  }
-
-  if (step.type === 'choice') {
-    return `<div class="choice-list">${step.choices.map((choice) => `<label><input type="radio" name="${step.key}" data-answer="${step.key}" value="${choice.value}" ${value === choice.value ? 'checked' : ''} /> ${choice.label}</label>`).join('')}</div>`;
-  }
-
-  if (step.type === 'name') {
-    return `<div class="quick-choices"><button type="button" data-quick-name="Sofía">Sofía</button><button type="button" data-quick-name="Gabriela">Gabriela</button></div><input class="answer-field" data-answer="${step.key}" type="text" value="${escapeHtml(value)}" placeholder="${step.placeholder}" autofocus />`;
-  }
-
-  if (step.type === 'select') {
-    return `<select class="answer-field" data-answer="${step.key}" autofocus>${step.options.map((option) => `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`).join('')}</select>`;
-  }
-
-  return `<input class="answer-field" data-answer="${step.key}" type="${step.type}" value="${escapeHtml(value)}" placeholder="${step.placeholder}" autofocus />`;
-  if (step.key === 'options') return `<p class="field-help">Los puntos marcados se agregarán al prompt.</p>${CheckboxOptions()}`;
-  if (step.type === 'choice') return `<div class="choice-list">${step.choices.map((choice) => `<label><input type="radio" name="${step.key}" data-answer="${step.key}" value="${choice.value}" ${value === choice.value ? 'checked' : ''} /> ${choice.label}</label>`).join('')}</div>`;
-  if (step.type === 'name') return `<div class="quick-choices"><button type="button" data-quick-name="Sofía">Sofía</button><button type="button" data-quick-name="Gabriela">Gabriela</button></div><input class="answer-field" data-answer="${step.key}" type="text" value="${escapeHtml(value)}" placeholder="${step.placeholder}" autofocus />`;
-  if (step.type === 'select') return `<select class="answer-field" data-answer="${step.key}" autofocus>${step.options.map((option) => `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`).join('')}</select>`;
-  return `<input class="answer-field" data-answer="${step.key}" type="${step.type}" value="${escapeHtml(value)}" placeholder="${step.placeholder}" autofocus />`;
-  screen: 'home',
-  selectedType: null,
-  currentStep: 0,
-  answers: {
-    language: 'es',
-    quizType: 'Mixto',
-    answersAtEnd: 'Sí',
-    level: 'Medio',
-    speakingNotes: 'Sí',
-  },
-  selectedOptions: [],
-  generatedPrompt: '',
-  copyMessage: '',
-};
 
 const root = document.querySelector('#root');
 
@@ -503,8 +448,6 @@ function StepForm(error = '') {
   const step = steps[state.currentStep];
   const value = state.answers[step.key] || '';
   const progress = Math.round(((state.currentStep + 1) / steps.length) * 100);
-  root.innerHTML = `<main class="app-shell form-shell"><section class="form-card"><button class="link-button" data-back type="button">← Atrás</button><p class="small-label">${promptTypes[state.selectedType].title}</p><div class="progress-wrap"><div style="width:${progress}%"></div></div><p class="progress-text">Paso ${state.currentStep + 1} de ${steps.length}</p><h1>${step.title}</h1>${renderField(step, value)}${error ? `<p class="error-message" role="alert">${error}</p>` : ''}<button class="primary-action" data-next type="button">✓ Continuar</button></section></main>`;
-1
   root.innerHTML = `
     <main class="app-shell form-shell">
       <section class="form-card">
@@ -533,29 +476,25 @@ function StepForm(error = '') {
 }
 
 function normalizeAnswer(value, lang) {
-  if (lang === 'en') {
-    return { 'Opción múltiple': 'Multiple choice', 'Verdadero/falso': 'True/false', 'Respuesta corta': 'Short answer', 'Mixto': 'Mixed', 'Sí': 'Yes', 'No': 'No', 'Fácil': 'Easy', 'Medio': 'Medium', 'Difícil': 'Hard' }[value] || value;
-  }
-    return {
-      'Opción múltiple': 'Multiple choice',
-      'Verdadero/falso': 'True/false',
-      'Respuesta corta': 'Short answer',
-      'Mixto': 'Mixed',
-      'Sí': 'Yes',
-      'No': 'No',
-      'Fácil': 'Easy',
-      'Medio': 'Medium',
-      'Difícil': 'Hard',
-    }[value] || value;
+  if (lang !== 'en') {
+    return value;
   }
 
-  return value;
+  return {
+    'Opción múltiple': 'Multiple choice',
+    'Verdadero/falso': 'True/false',
+    'Respuesta corta': 'Short answer',
+    'Mixto': 'Mixed',
+    'Sí': 'Yes',
+    'No': 'No',
+    'Fácil': 'Easy',
+    'Medio': 'Medium',
+    'Difícil': 'Hard',
+  }[value] || value;
 }
 
 function selectedOptionsText(lang) {
   const labels = optionLabels[lang];
-  const items = state.selectedOptions.map((key) => labels[key]);
-  return items.length ? items.join(', ') : (lang === 'en' ? 'only what is necessary for this prompt' : 'solo lo necesario para este prompt');
   const items = state.selectedOptions.map((key) => labels[key]).filter(Boolean);
 
   return items.length
@@ -575,32 +514,6 @@ function buildBase(lang) {
     : (lang === 'en' ? 'First locate and confirm the actual PDF pages that correspond to these printed book pages.' : 'Primero ubica y confirma las páginas reales del PDF que corresponden a estas páginas impresas del libro.');
 
   if (lang === 'en') {
-    return `Student: ${a.studentName}\nGrade: ${a.grade}\nSubject: ${a.subject}\nBook or source: ${source}\nPrinted book pages: ${a.startPage} - ${a.endPage}\nActual PDF pages: ${pdfStart} - ${pdfEnd}\n\nThe page numbers I am giving are the printed page numbers shown inside the book. Since the book is scanned inside a PDF, they may not match the actual PDF file page numbers.\n\nFirst, confirm which actual PDF pages correspond to these printed book pages. ${pdfLine} Also confirm the topic, chapter, or subtitles that appear on those pages.\n\nIf you cannot confirm this with certainty, tell me what you found and do not invent information.\n\nUse only the uploaded book or sources.
-
-Required response language: English. All generated content must be in English, including the explanation, video, examples, questions, answers, summary, vocabulary, presentation, audio, mind map, or timeline.`;
-  }
-  return `Estudiante: ${a.studentName}\nGrado: ${a.grade}\nMateria: ${a.subject}\nLibro o fuente: ${source}\nPáginas impresas del libro: ${a.startPage} - ${a.endPage}\nPáginas reales del PDF: ${pdfStart} - ${pdfEnd}\n\nLos números de página que estoy dando son las páginas impresas que aparecen en el libro. Como el libro está escaneado dentro de un PDF, pueden no coincidir con las páginas reales del archivo.\n\nPrimero confirma qué páginas reales del PDF corresponden a estas páginas impresas del libro. ${pdfLine} Confirma también el tema, capítulo o subtítulos que aparecen en esas páginas.\n\nSi no puedes confirmarlo con seguridad, dime qué encontraste y no inventes.\n\nUsa solamente la información del libro o fuentes subidas.
-
-Idioma obligatorio de respuesta: español. Todo el contenido generado debe estar en español, incluyendo explicación, video, ejemplos, preguntas, respuestas, resumen, vocabulario, presentación, audio, mapa mental o línea de tiempo.`;
-Respond completely in English. The explanation, examples, questions, answers, and any generated material must be in English.`;
-  }
-  return `Estudiante: ${a.studentName}\nGrado: ${a.grade}\nMateria: ${a.subject}\nLibro o fuente: ${source}\nPáginas impresas del libro: ${a.startPage} - ${a.endPage}\nPáginas reales del PDF: ${pdfStart} - ${pdfEnd}\n\nLos números de página que estoy dando son las páginas impresas que aparecen en el libro. Como el libro está escaneado dentro de un PDF, pueden no coincidir con las páginas reales del archivo.\n\nPrimero confirma qué páginas reales del PDF corresponden a estas páginas impresas del libro. ${pdfLine} Confirma también el tema, capítulo o subtítulos que aparecen en esas páginas.\n\nSi no puedes confirmarlo con seguridad, dime qué encontraste y no inventes.\n\nUsa solamente la información del libro o fuentes subidas.
-
-Responde completamente en español. La explicación, ejemplos, preguntas, respuestas y cualquier material generado deben estar en español.`;
-
-  const source = a.source || (lang === 'en' ? 'Not specified' : 'No especificado');
-  const pdfStart = a.pdfStartPage || (lang === 'en' ? 'to confirm' : 'por confirmar');
-  const pdfEnd = a.pdfEndPage || (lang === 'en' ? 'to confirm' : 'por confirmar');
-
-  const pdfLine = a.pdfStartPage || a.pdfEndPage
-    ? lang === 'en'
-      ? 'Verify that the actual PDF pages listed correctly match the printed book pages.'
-      : 'Verifica que las páginas reales del PDF indicadas correspondan correctamente a las páginas impresas del libro.'
-    : lang === 'en'
-      ? 'First locate and confirm the actual PDF pages that correspond to these printed book pages.'
-      : 'Primero ubica y confirma las páginas reales del PDF que corresponden a estas páginas impresas del libro.';
-
-  if (lang === 'en') {
     return `Student: ${a.studentName}
 Grade: ${a.grade}
 Subject: ${a.subject}
@@ -614,7 +527,9 @@ First, confirm which actual PDF pages correspond to these printed book pages. ${
 
 If you cannot confirm this with certainty, tell me what you found and do not invent information.
 
-Use only the uploaded book or sources.`;
+Use only the uploaded book or sources.
+
+Required response language: English. All generated content must be in English, including the explanation, video, examples, questions, answers, summary, vocabulary, presentation, audio, mind map, or timeline.`;
   }
 
   return `Estudiante: ${a.studentName}
@@ -630,7 +545,9 @@ Primero confirma qué páginas reales del PDF corresponden a estas páginas impr
 
 Si no puedes confirmarlo con seguridad, dime qué encontraste y no inventes.
 
-Usa solamente la información del libro o fuentes subidas.`;
+Usa solamente la información del libro o fuentes subidas.
+
+Idioma obligatorio de respuesta: español. Todo el contenido generado debe estar en español, incluyendo explicación, video, ejemplos, preguntas, respuestas, resumen, vocabulario, presentación, audio, mapa mental o línea de tiempo.`;
 }
 
 function buildSpecificInstruction(lang) {
@@ -811,63 +728,6 @@ function buildPrompt() {
 
 function GeneratedPrompt() {
   root.innerHTML = `<main class="app-shell form-shell"><section class="result-card"><h1>Prompt generado</h1><p class="field-help">Puedes editarlo antes de copiarlo.</p><textarea class="prompt-output" aria-label="Prompt generado editable">${escapeHtml(state.generatedPrompt)}</textarea><div class="result-actions"><button data-copy type="button">Copiar prompt</button><button data-edit type="button">Editar respuestas</button><button data-reset type="button">Crear otro prompt</button></div>${state.copyMessage ? `<p class="success-message" role="status">${state.copyMessage}</p>` : ''}</section></main>`;
-}
-
-function render(error) {
-  if (state.screen === 'form') StepForm(error);
-  else if (state.screen === 'result') GeneratedPrompt();
-  else renderHome();
-}
-
-root.addEventListener('click', async (event) => {
-  const create = event.target.closest('[data-create]');
-  if (create) {
-    const type = create.dataset.create;
-    state = { ...state, screen: 'form', selectedType: type, currentStep: 0, answers: { language: 'es', quizType: 'Mixto', answersAtEnd: 'Sí', level: 'Medio', speakingNotes: 'Sí' }, selectedOptions: [...(optionsByType[type] || [])], copyMessage: '' };
-    render();
-  }
-  if (event.target.closest('[data-quick-name]')) { state.answers.studentName = event.target.closest('[data-quick-name]').dataset.quickName; render(); }
-  if (event.target.closest('[data-back]')) { state.currentStep === 0 ? state.screen = 'home' : state.currentStep -= 1; render(); }
-  if (event.target.closest('[data-next]')) {
-    const steps = currentSteps();
-    const step = steps[state.currentStep];
-    if (!step.optional && !String(state.answers[step.key] || '').trim()) return render('Completa este campo para continuar.');
-    if (state.currentStep === steps.length - 1) { state.generatedPrompt = buildPrompt(); state.screen = 'result'; render(); } else { state.currentStep += 1; render(); }
-  }
-  if (event.target.closest('[data-copy]')) { state.generatedPrompt = document.querySelector('.prompt-output').value; await navigator.clipboard.writeText(state.generatedPrompt); state.copyMessage = 'Prompt copiado. Ahora pégalo en NotebookLM.'; render(); }
-  if (event.target.closest('[data-edit]')) { state.generatedPrompt = document.querySelector('.prompt-output').value; state.screen = 'form'; state.currentStep = 0; render(); }
-  if (event.target.closest('[data-reset]')) { state.screen = 'home'; state.generatedPrompt = ''; state.copyMessage = ''; render(); }
-});
-
-root.addEventListener('input', (event) => {
-  if (event.target.matches('[data-answer]')) state.answers[event.target.dataset.answer] = event.target.value;
-  if (event.target.matches('[data-option]')) state.selectedOptions = event.target.checked ? [...new Set([...state.selectedOptions, event.target.dataset.option])] : state.selectedOptions.filter((option) => option !== event.target.dataset.option);
-  if (event.target.matches('.prompt-output')) state.generatedPrompt = event.target.value;
-});
-
-root.addEventListener('keydown', (event) => {
-  if (event.key === 'Enter' && event.target.matches('.answer-field:not(select)')) document.querySelector('[data-next]')?.click();
-  root.innerHTML = `
-    <main class="app-shell result-shell">
-      <section class="result-card">
-        <div class="eyebrow">✨ ¡Listo!</div>
-        <h1>Tu prompt está listo para usar</h1>
-        <p class="result-help">Puedes editarlo aquí antes de copiarlo y pegarlo en NotebookLM.</p>
-
-        <textarea class="prompt-output" aria-label="Prompt generado editable">${escapeHtml(state.generatedPrompt)}</textarea>
-
-        <div class="result-actions">
-          <div class="copy-area">
-            <button class="primary-button" data-copy type="button">📋 Copiar prompt</button>
-            ${state.copyMessage ? `<p class="success-message" role="status">${state.copyMessage}</p>` : ''}
-          </div>
-
-          <button class="secondary-button" data-edit type="button">Editar respuestas</button>
-          <button class="secondary-button" data-reset type="button">↻ Crear otro prompt</button>
-        </div>
-      </section>
-    </main>
-  `;
 }
 
 function launchConfetti() {
